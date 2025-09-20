@@ -1,0 +1,1620 @@
+directive @authGuard(allowedRoles: [Role!]!) on FIELD_DEFINITION | MUTATION | QUERY | SUBSCRIPTION
+
+"""
+Directs the executor to defer this fragment when the `if` argument is true or undefined.
+"""
+directive @defer(
+  """Deferred when true or undefined."""
+  if: Boolean = true
+
+  """Unique name"""
+  label: String
+) on FRAGMENT_SPREAD | INLINE_FRAGMENT
+
+directive @goField(forceResolver: Boolean, name: String) on INPUT_FIELD_DEFINITION | FIELD_DEFINITION
+
+directive @goModel(model: String, models: [String!]) on OBJECT | INPUT_OBJECT | SCALAR | ENUM | INTERFACE | UNION
+
+"""
+Indicates exactly one field must be supplied and this field must not be `null`.
+"""
+directive @oneOf on INPUT_OBJECT
+
+directive @positiveInt(max: Int) on FIELD_DEFINITION | INPUT_FIELD_DEFINITION | ARGUMENT_DEFINITION
+
+"""Exposes a URL that specifies the behavior of this scalar."""
+directive @specifiedBy(
+  """The URL that specifies the behavior of this scalar."""
+  url: String!
+) on SCALAR
+
+"""
+Account means the multi-currency account in the fintech meaning. It is used to
+store the user balance. The balance is calculated by summing all transactions
+for the account. The account is created for each user and each currency.
+"""
+type Account {
+  id: Uuid!
+
+  """Owner id is a user id of the account owner"""
+  ownerId: Uuid!
+
+  """
+  Identifier is a unique name or purpose of the account for the current owner.
+  You can use it to create multiple accounts for the same owner for different
+  purposes. For example, you can create a separate account for depositing USD
+  and for withdrawing USD.
+  """
+  identifier: String!
+
+  """
+  Nonce is a number that is incremented every time the new outcome transaction
+  is commited. It is an optimistic lock variable for the double spending prevention.
+  """
+  nonce: Int!
+  status: AccountStatus!
+  createdAt: Time!
+  updatedAt: Time!
+}
+
+"""
+Account status means the current state of the account. It can be active, frozen
+or closed. The frozen account means that it is possible to receive funds but it
+is impossible to spend funds. The closed account means that it is impossible to
+get both in and out transactions.
+"""
+enum AccountStatus {
+  active
+  frozen
+  closed
+}
+
+input AddKnowledgeBaseItemInput {
+  chatbotId: Uuid!
+  url: String!
+}
+
+input AddReviewInput {
+  agentId: Uuid!
+  review: String!
+  rating: Int!
+}
+
+type Agent {
+  id: Uuid!
+  name: String!
+  description: String!
+  status: AgentStatus!
+  type: AgentType!
+  ui: AgentUi!
+  category: Category!
+  prompt: String
+  llm: Model!
+  picture: String!
+  llmProvider: ModelProvider!
+  slug: String!
+  websearchEnabled: Boolean!
+  requestPrice: Int!
+  intelligence: Int
+  speed: Int
+  visibility: Visibility!
+  availableOnlyForUnlimitedUsers: Boolean!
+  howToUse: String!
+  inputFields: [InputField!]!
+  vendor: Vendor
+  creator: User
+  counter: AgentCounter!
+  interaction: AgentInteraction!
+  promptExamples: [String!]!
+  features: [Feature!]!
+  inputMimeTypes: [String!]!
+  inputLimitations: InputLimitations!
+  inputFieldsSchema: String
+  url: String
+  apiKey: String
+  trialRunPrice: AgentTrialRunPrice
+  canRunUsingTrialPrice: Boolean!
+  runPrice: AgentRunPrice!
+  updatedAt: Time
+  createdAt: Time
+}
+
+type AgentConnection {
+  edges: [AgentEdge!]!
+  pageInfo: PageInfo!
+}
+
+type AgentCounter {
+  """The id of the agent"""
+  id: Uuid!
+  votes: Int!
+  uses: Int!
+  comments: Int!
+  reviews: Int!
+  avgRating: Float!
+  oneStarCount: Int!
+  twoStarCount: Int!
+  threeStarCount: Int!
+  fourStarCount: Int!
+  fiveStarCount: Int!
+}
+
+type AgentEdge {
+  node: Agent!
+  cursor: String!
+}
+
+type AgentInteraction {
+  isVoted: Boolean!
+  isInFavorites: Boolean!
+  isReviewed: Boolean!
+}
+
+type AgentRunPrice {
+  amount: Int!
+  currency: Currency!
+}
+
+enum AgentSort {
+  """Sort by latest (the date of agent creation)"""
+  latest
+
+  """Sort by popularity (number of uses)"""
+  popular
+
+  """Sort by trending (num of votes)"""
+  relative
+}
+
+enum AgentStatus {
+  active
+  inactive
+  deleted
+}
+
+type AgentTrialRunPrice {
+  amount: Int!
+  currency: Currency!
+}
+
+enum AgentType {
+  backend
+  frontend
+  mini
+}
+
+enum AgentUi {
+  chat
+  image
+  video
+  image_to_image
+  images_to_image
+  text_to_audio
+  audio_to_text
+  pdf_to_audio
+  pdf_to_chat
+  file_to_file
+  document_translation
+  chat_image
+}
+
+input ApproveCommentInput {
+  commentId: Uuid!
+  comment: String
+}
+
+input ApproveDraftInput {
+  draftId: Uuid!
+  comment: String
+  version: Int!
+}
+
+type ApproveDraftResult {
+  draft: Draft!
+  agent: Agent!
+}
+
+enum AudienceKnowledgeLevel {
+  beginner
+  intermediate
+  advanced
+}
+
+type Balance {
+  """The number of attempts"""
+  try: Int!
+
+  """
+  The number of credits that topped up to the user balance when Stripe subscription is payed.
+  """
+  credit: Int!
+
+  """
+  The number of available trial runs of agents in image generation category
+  """
+  imageTries: Int!
+
+  """The number of available trial runs of chatpdf agent"""
+  chatPdfTries: Int!
+
+  """The number of available basic model runs"""
+  basicModelRuns: Int!
+
+  """The number of advanced basic model runs"""
+  advancedModelRuns: Int!
+
+  """The number of advanced credits, that used in some models"""
+  advancedCredits: Int!
+}
+
+type BoolInputField {
+  name: String!
+  title: String!
+  description: String!
+  default: Boolean
+  required: Boolean!
+}
+
+enum BrandVoiceTone {
+  confident
+  no_nonsense
+  results_oriented
+}
+
+input CaptchaToken {
+  version: CaptchaVersion!
+  token: String!
+  action: String!
+}
+
+enum CaptchaVersion {
+  v2
+  v3
+}
+
+enum Category {
+  common
+  legal
+  llm
+  image_generation
+  marketing
+  business
+  beauty
+  creativity
+  fun
+  education
+  health
+  lifestyle
+  video_generation
+}
+
+input ChangePasswordInput {
+  oldPassword: String!
+  newPassword: String!
+}
+
+type Chat {
+  id: Uuid!
+  agent: Agent!
+  isMoreUploadsAllowed: Boolean!
+  supportsModelSwitching: Boolean!
+  topic: String
+  createdAt: Time!
+}
+
+union ChatAnnotation = ChatAnnotationUrlCitation
+
+type ChatAnnotationUrlCitation {
+  startIndex: Int!
+  endIndex: Int!
+  title: String!
+  url: String!
+}
+
+type ChatAttachment {
+  fileId: Uuid!
+  name: String!
+  mime: String!
+  size: Int!
+  url: String!
+}
+
+enum ChatAuthorRole {
+  assistant
+  user
+}
+
+type Chatbot {
+  id: Uuid!
+  name: String!
+  description: String!
+  prompt: String!
+  status: ChatbotStatus!
+  doUrl: String
+  doApiKey: String
+  avatar: String
+  avatarUploadId: Uuid
+  deploymentStatus: ChatbotStatus!
+  knowledgeBase: KnowledgeBase
+  model: DoModel!
+}
+
+type ChatbotLimit {
+  id: Uuid!
+  wordsLimit: Int!
+  wordsUsed: Int!
+  chatbotsLimit: Int!
+  chatbotsUsed: Int!
+  knowledgeBaseStorageLimit: Int!
+  startedAt: Time!
+  finishedAt: Time!
+  subscriptionId: Uuid!
+}
+
+enum ChatbotStatus {
+  new
+  processing
+  ready
+  failed
+  deleted
+}
+
+type ChatConnection {
+  edges: [ChatEdge!]!
+  pageInfo: PageInfo!
+}
+
+type ChatEdge {
+  node: Chat!
+  cursor: String!
+}
+
+type ChatJob {
+  agent: Agent!
+  userMessage: ChatMessage!
+  usage: [ChatJobUsage!]!
+  status: ChatJobStatus!
+  statusUpdatedAt: Time!
+}
+
+enum ChatJobStatus {
+  pending
+  completed
+  failed
+}
+
+type ChatJobUsage {
+  amount: Int!
+  currency: Currency!
+}
+
+type ChatMessage {
+  id: Uuid!
+  role: ChatAuthorRole!
+  text: String @deprecated(reason: "Please use ChatMessage.parts")
+  annotations: [ChatAnnotation]! @deprecated(reason: "Please use ChatMessage.parts")
+  parts: [ChatMessagePart!]!
+  attachments: [ChatAttachment!]!
+  job: ChatJob
+  createdAt: Time!
+}
+
+type ChatMessageConnection {
+  edges: [ChatMessageEdge!]!
+  pageInfo: PageInfo!
+}
+
+type ChatMessageEdge {
+  node: ChatMessage!
+  cursor: String!
+}
+
+union ChatMessagePart = ChatMessagePartText | ChatMessagePartFile | ChatMessagePartRefusal | ChatMessagePartReasoning | ChatMessagePartWebSearch | ChatMessagePartFunctionCall | ChatMessagePartFunctionResult
+
+type ChatMessagePartFile {
+  fileId: Uuid!
+  name: String!
+  mime: String!
+  size: Int!
+  url: String!
+}
+
+type ChatMessagePartFunctionCall {
+  callId: String!
+  name: String!
+  arguments: String!
+}
+
+type ChatMessagePartFunctionResult {
+  callId: String!
+  output: String!
+}
+
+type ChatMessagePartReasoning {
+  text: String!
+}
+
+type ChatMessagePartRefusal {
+  text: String!
+}
+
+type ChatMessagePartText {
+  text: String!
+  annotations: [ChatAnnotation!]!
+}
+
+type ChatMessagePartWebSearch {
+  action: WebSearchAction!
+  status: WebSearchStatus!
+}
+
+type CollectedEmail {
+  email: String!
+  createdAt: Time!
+}
+
+type Comment {
+  id: Uuid!
+  userId: Uuid!
+  content: String!
+  createdAt: Time!
+  updatedAt: Time!
+  author: User!
+}
+
+type CommentConnection {
+  edges: [CommentEdge!]!
+  pageInfo: PageInfo!
+}
+
+type CommentEdge {
+  node: Comment!
+  cursor: String!
+}
+
+enum CommentReviewStatus {
+  waiting_for_review
+  approved
+  rejected
+}
+
+input ConfirmResetPasswordInput {
+  token: String!
+  password: String!
+}
+
+enum ContentFormat {
+  blog_article
+  product_description
+  faq
+  landing_page
+  newsletter_text
+  social_media_caption
+  how_to_guide
+  product_review
+}
+
+input CreateChatbotInput {
+  modelId: Uuid!
+}
+
+input CreateChatInput {
+  agentId: Uuid!
+  isHidden: Boolean
+}
+
+input CreateMiniAgentInput {
+  underlyingAgentId: Uuid!
+}
+
+input CreateSeoEcommercePresetInput {
+  name: String!
+  websiteUrl: String!
+  mainTopic: String!
+  seedKeyword: String!
+  brandVoiceTone: BrandVoiceTone!
+  eeatHighlights: String!
+  brandName: String!
+  targetAudienceKnowledgeLevel: AudienceKnowledgeLevel!
+  targetWordCount: TargetWordCount!
+  contentFormat: ContentFormat!
+  competitors: String!
+  emailAddress: String
+}
+
+enum Currency {
+  basicRun
+  advancedRun
+  advancedCredit
+  try
+  imageTry
+  chatPdfTry
+}
+
+type DoModel {
+  id: Uuid!
+  name: String!
+  agent: Agent!
+}
+
+enum DoModelStatus {
+  active
+  inactive
+}
+
+type Draft {
+  id: Uuid!
+  reviewerComment: String
+  name: String
+  description: String
+  picture: String
+  pictureUploadId: Uuid
+  category: Category
+  slug: String
+  prompt: String
+  status: DraftStatus!
+  updatedAt: Time!
+  createdAt: Time!
+  version: Int!
+  agentSlug: String
+  visibility: Visibility!
+  promptExamples: [String!]!
+  underlyingAgent: Agent!
+}
+
+type DraftConnection {
+  edges: [DraftEdge!]!
+  pageInfo: PageInfo!
+}
+
+type DraftEdge {
+  node: Draft!
+  cursor: String!
+}
+
+enum DraftStatus {
+  editing
+  waiting_for_review
+  rejected_on_review
+  applied
+  deleted
+}
+
+type EmailPreferences {
+  subscribeToMarketingEmails: Boolean!
+}
+
+type EmailVerification {
+  id: Uuid!
+  userId: Uuid!
+  email: String!
+  token: String!
+  isVerified: Boolean!
+  createdAt: Time!
+  updatedAt: Time!
+}
+
+type ExchangeRate {
+  pair: String!
+  rate: String!
+  createdAt: Time!
+  updatedAt: Time!
+}
+
+type Favorite {
+  id: Uuid!
+  userId: Uuid!
+  agentId: Uuid!
+  createdAt: Time!
+}
+
+enum Feature {
+  openaiReasoning
+  openaiWebSearch
+  memory
+  modelSwitching
+}
+
+type FileInputField {
+  name: String!
+  title: String!
+  description: String!
+  required: Boolean!
+}
+
+input FinishMiniAgentDraftInput {
+  draftId: Uuid!
+  name: String!
+  description: String!
+  category: Category!
+  slug: String!
+  image: Uuid!
+  underlyingAgentId: Uuid!
+  prompt: String!
+  promptExamples: [String!]!
+  visibility: Visibility!
+  version: Int
+}
+
+type FinishMiniAgentDraftResult {
+  draft: Draft!
+  agent: Agent
+}
+
+type FloatInputField {
+  name: String!
+  title: String!
+  description: String!
+  minimum: Float
+  maximum: Float
+  default: Float
+  required: Boolean!
+}
+
+input GenerateEcommerceContentInput {
+  websiteUrl: String!
+  mainTopic: String!
+  seedKeyword: String!
+  brandVoiceTone: BrandVoiceTone!
+  eeatHighlights: String!
+  brandName: String!
+  targetAudienceKnowledgeLevel: AudienceKnowledgeLevel!
+  targetWordCount: TargetWordCount!
+  contentFormat: ContentFormat!
+  competitors: String!
+  emailAddress: String
+}
+
+type GetopenpayCheckoutSession {
+  """The unique identifier of the checkout session in GetOpenPay"""
+  id: String!
+
+  """The unique identifier of the user in the system"""
+  customerId: Uuid!
+  priceId: Uuid!
+  status: GetopenpaySessionStatus!
+  url: String!
+  clientSecret: String!
+}
+
+input GetopenpayCheckoutSessionInput {
+  """The price id in Stripe"""
+  priceId: Uuid!
+  successUrl: String!
+  cancelUrl: String!
+}
+
+type GetopenpayCustomer {
+  """The unique identifier of the user in the system"""
+  id: Uuid!
+  getopenpayId: String!
+}
+
+type GetopenpayPrice {
+  """ID of the price in OpenPay"""
+  id: String!
+
+  """ID of the price in our system"""
+  priceId: Uuid!
+  env: GetopenpayPriceEnv!
+}
+
+enum GetopenpayPriceEnv {
+  prod
+  dev
+  test
+}
+
+enum GetopenpaySessionStatus {
+  success
+  failure
+  open
+  processing
+}
+
+type GetopenpaySubscription {
+  """ID of subscription in the OpenPay system"""
+  id: String!
+
+  """ID of subscription in our system"""
+  subscriptionId: Uuid!
+}
+
+enum GetopenpaySubscriptionStatus {
+  active
+  canceled
+  unpaid
+  changed
+}
+
+enum GoogleAuthPlatform {
+  web
+  android
+  ios
+}
+
+type GooglePayPrice {
+  id: Uuid!
+  priceId: Uuid!
+  gPaySubscriptionId: String!
+  gPayBasePlanId: String!
+  createdAt: Time!
+  updatedAt: Time!
+}
+
+type GoogleRegistration {
+  tokenPair: TokenPair!
+  isNewUser: Boolean!
+}
+
+union InputField = StringInputField | IntInputField | FloatInputField | BoolInputField | FileInputField | MultiFileInputField
+
+type InputLimitationPerMime {
+  mime: String!
+  maxSize: Int!
+}
+
+type InputLimitations {
+  minMessageLength: Int!
+  maxMessageLength: Int!
+  minFiles: Int!
+  maxFiles: Int!
+  perMime: [InputLimitationPerMime!]!
+}
+
+type IntInputField {
+  name: String!
+  enum: [Int!]
+  title: String!
+  description: String!
+  minimum: Int
+  maximum: Int
+  default: Int
+  required: Boolean!
+}
+
+type KnowledgeBase {
+  id: Uuid!
+  name: String!
+  status: KnowledgeBaseStatus!
+  items: [KnowledgeBaseItem!]
+}
+
+type KnowledgeBaseItem {
+  id: Uuid!
+  sourceType: KnowledgeBaseSourceType!
+  sourceName: String!
+  status: KnowledgeBaseStatus!
+  tokens: Int!
+}
+
+enum KnowledgeBaseSourceType {
+  file
+  url
+  spaces_bucket
+  s3_bucket
+}
+
+enum KnowledgeBaseStatus {
+  new
+  processing
+  ready
+  failed
+  deleted
+}
+
+input LeaveCommentInput {
+  targetId: Uuid!
+  targetType: TargetType!
+  content: String!
+}
+
+input LoginViaEmailInput {
+  email: String!
+  password: String!
+  captcha: CaptchaToken
+}
+
+type Me {
+  id: Uuid!
+  name: String!
+  email: String!
+  emailPreferences: EmailPreferences!
+  subscription: StripeSubscription @deprecated(reason: "Use paymentSubscription instead")
+  paymentSubscription: PaymentSubscription
+  balance: Balance!
+  registrationTypes: [RegistrationType!]!
+  trialAvailable: Boolean!
+  annualDiscountAvailable: Boolean!
+  seoSuiteAvailable: Boolean!
+}
+
+enum Model {
+  gpt_3_5
+  gpt_3_5_turbo
+  gpt_4
+  gpt_4_turbo
+  gpt_4_5_preview
+  gpt_4o
+  gpt_4o_search_preview
+  gpt_4o_mini
+  gpt_4o_mini_search_preview
+  chatgpt_4o
+  o3_mini
+  o1
+  o1_mini
+  o1_pro
+  dall_e_2
+  dall_e_3
+  gpt_4_1
+  gpt_4_1_mini
+  gpt_4_1_nano
+  gemini_2_5_pro_preview
+  gemini_2_5_flash_preview
+  claude_3_7_sonnet
+  claude_3_5_sonnet
+  claude_3_5_haiku
+  gpt_image_1
+  o3
+  o4_mini
+  flux_pro_1_1
+  midjourney
+  flux_pro_1_1_ultra
+  grok_3_beta
+  grok_3_mini_beta
+  grok_2_vision_1212
+  grok_2_1212
+  perplexity_sonar_pro
+  meta_llama_4_maverick
+  meta_llama_4_scout
+  deepseek_v3_0324
+  kling_v1_6_standard
+  kling_v1_6_pro
+  kling_v2_0
+  google_veo_2
+  minimax_video_01
+  claude_4_sonnet
+  claude_4_opus
+  google_veo_3
+  labs_851_background_remover
+  recraft_ai_recraft_crisp_upscale
+  black_forest_labs_flux_kontext_pro
+  flux_kontext_apps_multi_image_kontext_max
+  flux_kontext_apps_depth_of_field
+  catacolabs_sdxl_ad_inpaint
+  flux_kontext_apps_filters
+  flux_kontext_apps_iconic_locations
+  nvidia_pdf_to_podcast
+  resemble_ai_chatterbox_pro
+  nvidia_parakeet_rnnt_1_1_b
+  eden_ai_ai_detection
+  eden_ai_plagia_detection
+  eden_ai_anonymization
+  chat_pdf_default
+  convertapi_pdf_to_png
+  convertapi_pdf_to_ppt
+  google_veo_3_fast
+  grok_4
+  ecommerce_seo
+  gemini_2_5_flash
+  eden_ai_document_translation
+  gpt_5
+  gpt_5_mini
+  gpt_5_nano
+  claude_4_1_opus
+  google_nano_banana
+}
+
+enum ModelProvider {
+  openai
+  openrouter
+  anthropic
+  flux
+  replicate
+  eden_ai
+  chat_pdf
+  convertapi
+  workflow
+}
+
+type MultiFileInputField {
+  name: String!
+  title: String!
+  description: String!
+  minimum: Int
+  maximum: Int
+  required: Boolean!
+}
+
+type Mutation {
+  ping: String!
+  createMiniAgent(input: CreateMiniAgentInput!): Draft!
+  updateMiniAgent(input: UpdateMiniAgentInput!): Draft!
+  startUploadToAgentDraft(input: StartUploadToAgentDraftInput!): StartUploadResult!
+  updateMiniAgentDraft(input: UpdateMiniAgentDraftInput!): Draft!
+  finishMiniAgentDraft(input: FinishMiniAgentDraftInput!): FinishMiniAgentDraftResult!
+  approveDraft(input: ApproveDraftInput!): ApproveDraftResult!
+  rejectDraft(input: RejectDraftInput!): Draft!
+  deleteDraft(id: Uuid!): Void!
+  addAgentToFavorites(id: Uuid!): Agent!
+  removeAgentFromFavorites(id: Uuid!): Agent!
+  registerViaEmail(input: RegisterViaEmailInput!): TokenPair!
+  loginViaEmail(input: LoginViaEmailInput!): TokenPair!
+  requestResetPassword(email: String!): Void!
+  confirmResetPassword(input: ConfirmResetPasswordInput!): Void!
+  changePassword(input: ChangePasswordInput!): User!
+  registerViaGoogle(input: RegisterViaGoogleInput!): TokenPair! @deprecated(reason: "Use `googleRegistration` instead")
+  googleRegistration(input: RegisterViaGoogleInput!): GoogleRegistration!
+
+  """
+  Refreshes the access token using the refresh token.
+  If the refreshToken param is empty, the refresh token will be taken from the cookie.
+  """
+  refreshToken(refreshToken: String): TokenPair!
+  logout: Void!
+  createChat(input: CreateChatInput!): Chat!
+  startUploadToChat(input: StartUploadToChatInput!): StartUploadToChatResult!
+  deleteChat(id: Uuid!): Void!
+  createChatbot(input: CreateChatbotInput!): Chatbot!
+  updateChatbot(input: UpdateChatbotInput!): Chatbot!
+  startUploadChatbotAvatar(input: StartUploadToAgentDraftInput!): StartUploadResult!
+  deleteChatbot(id: Uuid!): Boolean!
+  addKnowledgeBaseItemToChatbot(input: AddKnowledgeBaseItemInput!): Chatbot!
+  removeKnowledgeBaseItemFromChatbot(knowledgeBaseItemId: Uuid!): Boolean!
+  leaveComment(input: LeaveCommentInput!): Comment!
+  upVoteAgent(agentId: Uuid!): Agent!
+  downVoteAgent(agentId: Uuid!): Agent!
+  deleteComment(commentId: Uuid!): Void!
+  approveComment(input: ApproveCommentInput!): Comment!
+  rejectComment(input: RejectCommentInput!): Comment!
+  addReview(input: AddReviewInput!): Review!
+  openGetopenpayCheckoutSession(input: GetopenpayCheckoutSessionInput!): GetopenpayCheckoutSession!
+  startGetopenpayTrial(input: StartGetopenpayTrialInput!): GetopenpayCheckoutSession!
+  cancelSubscription: Void!
+  updateSubscription(newPriceId: Uuid!): PaymentSubscription!
+  openStripeCheckoutSession(input: StripeCheckoutSessionInput!): StripeCheckoutSession!
+  cancelStripeSubscription: Void! @deprecated(reason: "Use `cancelSubscription` instead")
+  createSeoEcommercePreset(input: CreateSeoEcommercePresetInput!): SeoEcommercePreset!
+  deleteSeoEcommercePreset(id: Uuid!): Void!
+  seoGenerateEcommerceContent(input: GenerateEcommerceContentInput!): SeoEcommerceRequest!
+  collectEmail(email: String!): Void!
+  confirmEmail(token: String!): Void!
+  updateEmailPreferences(input: UpdateEmailPreferences!): Me!
+  updateName(name: String!): Me!
+  sendEmail(input: SendEmailInput!): Void!
+  deleteMe: Void!
+}
+
+"""
+Operation means the operation that may consist of several transactions. It is
+used to avoid processing the same transactions multiple times.
+"""
+type Operation {
+  id: Uuid!
+  type: OpType!
+  createdAt: Time!
+}
+
+enum OpType {
+  deposit
+  withdrawal
+  transfer
+  payment
+  chargeback
+  exchange
+  burning
+}
+
+type PageInfo {
+  endCursor: String!
+  startCursor: String!
+  hasNextPage: Boolean!
+  hasPreviousPage: Boolean!
+}
+
+enum PaymentInterval {
+  day
+  week
+  month
+  year
+  one_time
+}
+
+enum PaymentProvider {
+  stripe
+  manual
+  getopenpay
+  google_pay
+}
+
+type PaymentSubscription {
+  id: Uuid!
+  ownerId: Uuid!
+  status: SubscriptionStatus!
+  currentPeriodStart: Time!
+  currentPeriodEnd: Time!
+  error: String
+  provider: PaymentProvider!
+  price: Price!
+}
+
+type Price {
+  id: Uuid!
+  name: String!
+  description: String!
+  price: String!
+  status: PriceStatus!
+  credits: Int!
+  monthlyPrice: String!
+  interval: PaymentInterval!
+  product: ProductType!
+  basicRuns: Int!
+  advancedRuns: Int!
+  advancedCredits: Int!
+}
+
+enum PriceStatus {
+  active
+  inactive
+}
+
+type Product {
+  id: ProductType!
+  name: String!
+  description: String!
+  prices: [Price!]!
+}
+
+enum ProductType {
+  other
+  testing
+  basic
+  plus
+  pro
+  unlimited
+  one_time
+}
+
+type PublicChatbot {
+  id: Uuid!
+  name: String!
+  description: String!
+  status: ChatbotStatus!
+  avatar: String
+}
+
+type Query {
+  ping: String!
+  agent(id: Uuid!): Agent!
+  agentBySlug(slug: String!): Agent!
+  draft(id: Uuid!): Draft!
+  myAgentDrafts(first: Int!, after: String): DraftConnection!
+
+  """The my agents"""
+  myAgents(search: String, category: Category, first: Int!, after: String): AgentConnection!
+
+  """The latest agents"""
+  agents(search: String, category: Category, sort: AgentSort, first: Int!, after: String): AgentConnection!
+
+  """The trending agents"""
+  trendingAgents(search: String, category: Category, first: Int!, after: String): AgentConnection!
+
+  """The agents sorted by popularity"""
+  popularAgents(search: String, category: Category, first: Int!, after: String): AgentConnection!
+
+  """The latest agents"""
+  myFavoriteAgents(search: String, category: Category, first: Int!, after: String): AgentConnection!
+  chat(id: Uuid!): Chat!
+  chats(first: Int!, after: String, search: String): ChatConnection!
+  chatMessages(chatId: Uuid!, first: Int!, after: String): ChatMessageConnection!
+  switchableAgents(chatId: Uuid): [SwitchableAgent!]!
+  chatbotModels: [DoModel!]!
+  chatbot(id: Uuid!): Chatbot!
+  myChatbots: [Chatbot!]!
+  publicChatbot(id: Uuid!): PublicChatbot!
+  chatbotLimits: ChatbotLimit!
+  comments(targetId: Uuid!, first: Int!, after: String): CommentConnection!
+  reviews(targetId: Uuid!, first: Int!, after: String): ReviewConnection!
+  prices: [Price!]!
+  products: [Product!]!
+  stripePrices: [StripePrice!]! @deprecated(reason: "Use `prices` instead")
+  seoEcommercePresets(first: Int!, after: String): SeoEcommercePresetConnection!
+  seoEcommercePreset(id: Uuid!): SeoEcommercePreset
+  seoContentRequests(first: Int!, after: String): SeoEcommerceRequestConnection!
+  seoContentResponse(requestID: Uuid!): SeoEcommerceResponse
+  me: Me!
+}
+
+input RegisterViaEmailInput {
+  email: String!
+  password: String!
+  subscribeToMarketingEmails: Boolean
+  captcha: CaptchaToken
+}
+
+input RegisterViaGoogleInput {
+  code: String!
+  verifier: String!
+  subscribeToMarketingEmails: Boolean
+
+  """
+  The URL that has been used for creation the temporary code.
+  If not provided, the default redirect URL from configs is used.
+  """
+  redirectUrl: String
+
+  """
+  Platform from which the user is registering.
+  If not provided, defaults to `web`.
+  """
+  platform: GoogleAuthPlatform
+}
+
+enum RegistrationType {
+  email
+  google
+}
+
+input RejectCommentInput {
+  commentId: Uuid!
+  comment: String
+}
+
+input RejectDraftInput {
+  draftId: Uuid!
+  comment: String
+  version: Int!
+}
+
+enum ResponseType {
+  start
+  done
+  delta
+  incomplete
+  error
+}
+
+type Review {
+  id: Uuid!
+  userId: Uuid!
+  targetId: Uuid!
+  rating: Int!
+  review: String!
+  createdAt: Time!
+  updatedAt: Time!
+  author: User!
+}
+
+type ReviewConnection {
+  edges: [ReviewEdge!]!
+  pageInfo: PageInfo!
+}
+
+type ReviewEdge {
+  node: Review!
+  cursor: String!
+}
+
+enum Role {
+  user
+  developer
+  admin
+}
+
+enum RunCurrency {
+  bRN
+  aRN
+  aCRDT
+}
+
+input SendEmailInput {
+  email: String!
+  name: String!
+  content: String!
+}
+
+type SeoEcommercePreset {
+  id: Uuid!
+  userId: Uuid!
+  name: String!
+  websiteUrl: String!
+  mainTopic: String!
+  seedKeyword: String!
+  brandVoiceTone: BrandVoiceTone!
+  eeatHighlights: String!
+  brandName: String!
+  targetAudienceKnowledgeLevel: AudienceKnowledgeLevel!
+  targetWordCount: TargetWordCount!
+  contentFormat: ContentFormat!
+  competitors: String!
+  emailAddress: String
+  createdAt: Time!
+  updatedAt: Time!
+}
+
+type SeoEcommercePresetConnection {
+  edges: [SeoEcommercePresetEdge!]!
+  pageInfo: PageInfo!
+}
+
+type SeoEcommercePresetEdge {
+  node: SeoEcommercePreset!
+  cursor: String!
+}
+
+type SeoEcommerceRequest {
+  id: Uuid!
+  userId: Uuid!
+  websiteUrl: String!
+  mainTopic: String!
+  seedKeyword: String!
+  brandVoiceTone: BrandVoiceTone!
+  eeatHighlights: String!
+  brandName: String!
+  targetAudienceKnowledgeLevel: AudienceKnowledgeLevel!
+  targetWordCount: TargetWordCount!
+  contentFormat: ContentFormat!
+  competitors: String!
+  emailAddress: String
+  status: SeoEcommerceRequestStatus!
+  createdAt: Time!
+}
+
+type SeoEcommerceRequestConnection {
+  edges: [SeoEcommerceRequestEdge!]!
+  pageInfo: PageInfo!
+}
+
+type SeoEcommerceRequestEdge {
+  node: SeoEcommerceRequest!
+  cursor: String!
+}
+
+enum SeoEcommerceRequestStatus {
+  draft
+  pending
+  completed
+  failed
+}
+
+type SeoEcommerceResponse {
+  id: Uuid!
+  requestId: Uuid!
+  type: ResponseType!
+  content: String!
+  score: Int!
+  createdAt: Time!
+  updatedAt: Time!
+  addedTopics: [String!]!
+}
+
+input StartGetopenpayTrialInput {
+  successUrl: String!
+  cancelUrl: String!
+}
+
+type StartUploadFileToChatHeader {
+  key: String!
+  value: [String!]!
+}
+
+type StartUploadHeader {
+  key: String!
+  value: [String!]!
+}
+
+type StartUploadResult {
+  uploadId: Uuid!
+  method: String!
+  url: String!
+  headers: [StartUploadHeader!]!
+}
+
+input StartUploadToAgentDraftInput {
+  draftId: Uuid!
+  name: String!
+  mime: String!
+  size: Int!
+  sha256: String!
+}
+
+input StartUploadToChatInput {
+  name: String!
+  mime: String!
+  size: Int!
+  sha256: String!
+}
+
+type StartUploadToChatResult {
+  fileId: Uuid!
+  method: String!
+  url: String!
+  headers: [StartUploadFileToChatHeader!]!
+}
+
+type StringInputField {
+  name: String!
+  enum: [String!]
+  title: String!
+  description: String!
+  default: String
+  required: Boolean!
+}
+
+type StripeCheckoutSession {
+  """The unique identifier of the checkout session in Stripe"""
+  id: String!
+
+  """The unique identifier of the user in the system"""
+  customerId: Uuid!
+  priceId: String!
+  status: StripeSessionStatus!
+  url: String!
+  clientSecret: String!
+}
+
+input StripeCheckoutSessionInput {
+  """The price id in Stripe"""
+  priceId: String
+
+  """
+  Use the result from `prices` query to get the base price id.
+  If parameter is provided, the `priceId` field is ignored.
+  """
+  basePriceId: Uuid
+  successUrl: String!
+  cancelUrl: String!
+  isEmbed: Boolean
+  isTrial: Boolean
+}
+
+type StripeCustomer {
+  """The unique identifier of the user in the system"""
+  id: Uuid!
+  stripeId: String!
+}
+
+type StripePrice {
+  id: String!
+  name: String!
+  description: String!
+  price: String!
+  status: PriceStatus!
+  productId: String!
+  credits: Int!
+  interval: PaymentInterval!
+  monthlyPrice: String!
+  priceId: Uuid!
+  env: StripePriceEnv!
+}
+
+enum StripePriceEnv {
+  dev
+  prod
+  test
+}
+
+enum StripeSessionStatus {
+  success
+  failure
+  open
+  processing
+}
+
+type StripeSubscription {
+  id: String!
+  customerId: Uuid!
+  status: StripeSubscriptionStatus!
+  currentPeriodStart: Time!
+  currentPeriodEnd: Time!
+  productId: String!
+  subscriptionId: Uuid!
+  price: StripePrice!
+}
+
+enum StripeSubscriptionStatus {
+  active
+  canceled
+  unpaid
+  changed
+  trial
+}
+
+type Subscription {
+  ping: String!
+}
+
+type SubscriptionSchedule {
+  id: Uuid!
+  type: SubscriptionScheduleType!
+  status: SubscriptionScheduleStatus!
+  accountId: Uuid!
+  operationId: Uuid
+  startAt: Time!
+  period: SubscriptionSchedulePeriod!
+  appliedAt: Time
+  createdAt: Time!
+}
+
+enum SubscriptionSchedulePeriod {
+  day
+  week
+  month
+}
+
+enum SubscriptionScheduleStatus {
+  new
+  pending
+  success
+  canceled
+}
+
+enum SubscriptionScheduleType {
+  start
+  extend
+  end
+}
+
+enum SubscriptionStatus {
+  active
+  canceled
+  unpaid
+  changed
+  trial
+  updating
+  failed
+}
+
+type SwitchableAgent {
+  agent: Agent!
+  switchable: Boolean!
+}
+
+enum TargetType {
+  agent
+}
+
+enum TargetWordCount {
+  short
+  medium
+  long
+}
+
+"""Time scalar type represents a time value in RFC3339/ISO8601 format."""
+scalar Time
+
+type TokenPair {
+  accessToken: String!
+  refreshToken: String!
+}
+
+type Transaction {
+  id: Uuid!
+  amount: String!
+  currency: String!
+  status: TxStatus!
+  direction: TxDirection!
+  accountId: Uuid!
+  operationId: Uuid!
+  type: TxType!
+  createdAt: Time!
+}
+
+enum TrialRunCurrency {
+  image_try
+  chat_pdf_try
+  try
+}
+
+enum TxDirection {
+  in
+  out
+}
+
+enum TxStatus {
+  pending
+  success
+  failed
+  canceled
+}
+
+enum TxType {
+  deposit
+  withdrawal
+  transfer
+  fee
+  payment
+  chargeback
+  exchange
+  burning
+}
+
+input UpdateChatbotInput {
+  id: Uuid!
+  modelId: Uuid
+  name: String!
+  description: String!
+  prompt: String!
+  avatarUploadId: Uuid
+}
+
+input UpdateEmailPreferences {
+  subscribeToMarketingEmails: Boolean
+}
+
+input UpdateMiniAgentDraftInput {
+  draftId: Uuid!
+  name: String
+  description: String
+  category: Category
+  image: Uuid
+  slug: String
+  underlyingAgentId: Uuid
+  prompt: String
+  promptExamples: [String!]
+  visibility: Visibility
+  version: Int
+}
+
+input UpdateMiniAgentInput {
+  agentId: Uuid!
+}
+
+scalar Upload
+
+type User {
+  id: Uuid!
+  name: String!
+}
+
+scalar Uuid
+
+enum Vendor {
+  openai
+  anthropic
+  google
+  x_ai
+  perplexity
+  meta
+  deepseek
+}
+
+enum Visibility {
+  public
+  private
+}
+
+scalar Void
+
+type VoidBox {
+  value: Void!
+}
+
+type Vote {
+  id: Uuid!
+  userId: Uuid!
+  targetId: Uuid!
+  createdAt: Time!
+}
+
+union WebSearchAction = WebSearchActionSearch | WebSearchActionOpenPage | WebSearchActionFind
+
+type WebSearchActionFind {
+  url: String!
+  pattern: String!
+}
+
+type WebSearchActionOpenPage {
+  url: String!
+}
+
+type WebSearchActionSearch {
+  query: String!
+}
+
+enum WebSearchStatus {
+  searching
+  completed
+  failed
+}
+

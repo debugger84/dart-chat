@@ -1,0 +1,12 @@
+query Me {
+    me{
+        id
+        email
+        balance {
+            basicModelRuns
+            advancedModelRuns
+            advancedCredits
+        }
+        name
+    }
+}
